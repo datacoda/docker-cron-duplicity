@@ -1,25 +1,13 @@
-FROM phusion/baseimage:0.9.16
-MAINTAINER Ted Chen <ted@nephilagraphic.com>
+FROM python:2-onbuild
+MAINTAINER Ted Chen <tedlchen@gmail.com>
 
-# Set correct environment variables.
-ENV HOME /root
-
-# Use baseimage-docker's init system.
-CMD ["/sbin/my_init"]
-
-# Install packages required
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y wget \
-        python python-dev python-pip librsync-dev \
-        ncftp lftp rsync  \
+ && apt-get install -y cron rsync librsync-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# Install the pyhton requirements
-ADD requirements.txt /opt/
-RUN pip install --upgrade --requirement /opt/requirements.txt
 
 # Download and install duplicity
-RUN export VERSION=0.6.25  \
+RUN export VERSION=0.6.26  \
  && cd /tmp/  \
  && wget https://code.launchpad.net/duplicity/0.6-series/$VERSION/+download/duplicity-$VERSION.tar.gz  \
  && cd /opt/  \
@@ -30,23 +18,18 @@ RUN export VERSION=0.6.25  \
  && rm -rf /tmp/* /var/tmp/*
 
 # Exposed environments
-ENV SOURCE_DIR /var/lib/vhabot/config.d
-ENV REMOTE_URL s3+http://bucket/
-ENV PASSPHRASE symmetric
-ENV AWS_ACCESS_KEY_ID secretid
-ENV AWS_SECRET_ACCESS_KEY secretkey
+ENV CRON_SCHEDULE="0 1 * * *"
+ENV SOURCE=""
+ENV REMOTE_URL=""
+ENV PARAMS="--full-if-older-than 1M"
+ENV PASSPHRASE=""
+ENV AWS_ACCESS_KEY_ID=""
+ENV AWS_SECRET_ACCESS_KEY=""
 
-# Configure
-RUN mkdir /etc/my_init.d -p
+RUN ln -s /usr/src/app/backup.sh /usr/local/sbin/backup \
+ && ln -s /usr/src/app/list.sh /usr/local/sbin/list \
+ && ln -s /usr/src/app/restore.sh /usr/local/sbin/restore \
+ && ln -s /usr/src/app/status.sh /usr/local/sbin/status
 
-COPY backup.sh /usr/local/bin/backup
-COPY restore.sh /usr/local/bin/restore
-COPY cron_backup.sh /usr/local/bin/cron_backup
-COPY cron_daily.sh /etc/cron.daily/backup_incremental
-COPY cron_weekly.sh /etc/cron.weekly/backup_full
-
-RUN chmod 755 /usr/local/bin/backup  \
- && chmod 755 /usr/local/bin/restore  \
- && chmod 755 /usr/local/bin/cron_backup  \
- && chmod 755 /etc/cron.daily/backup_incremental  \
- && chmod 755 /etc/cron.weekly/backup_full
+ENTRYPOINT ["/usr/src/app/start.sh"]
+CMD [""]
