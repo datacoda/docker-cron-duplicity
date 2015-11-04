@@ -1,6 +1,6 @@
 dataferret/cron-duplicity
 ==============================
-![Latest tag](https://img.shields.io/github/tag/dataferret/duplicity-s3-backup.svg?style=flat)
+![Latest tag](https://img.shields.io/github/tag/dataferret/docker-cron-duplicity.svg?style=flat)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)
 
 Provides [duplicity](http://duplicity.nongnu.org/) backup to S3 under cron.
