@@ -14,20 +14,33 @@ function finish {
 }
 trap finish EXIT
 
+function error_exit
+{
+    local parent_lineno="$1"
+    local message="$2"
+    local code="${3:-1}"
+    echo "Restore failed.  Err ${code}"
+    if [[ -n "$message" ]] ; then
+        echo "Error on or near line ${parent_lineno}: ${message};"
+    else
+        echo "Error on or near line ${parent_lineno};"
+    fi
+    exit "${code}"
+}
+trap 'error_exit ${LINENO}' ERR
+
+
 /usr/local/bin/duplicity restore $@ ${REMOTE_URL} ${RESTORE_PATH}
-
-code=$?
-
-if [ "$code" -ne 0 ] ; then
-    echo "Restore failure - exit=$code"
-    exit $code
-fi
 
 # Move existing source elsewhere
 DATESTAMP=`date +"%Y-%m-%dT%H%M%S"`
+ROTATE_DIR=/var/backups/${DATESTAMP}
+mkdir -p ${ROTATE_DIR}
 
-ROTATE_DIR=/var/backups/${DATESTAMP}/
-mv ${SOURCE_PATH%/} ${ROTATE_DIR}
-mv ${RESTORE_PATH} ${SOURCE_PATH%/}
+# Shuffle everything out of SOURCE_PATH
+# We do this instead of just moving the directory because it may be
+# a mounted volume.
+[ -n "$(shopt -s nullglob; echo ${SOURCE_PATH%/}/*)" ] && mv ${SOURCE_PATH%/}/* ${ROTATE_DIR}/
+mv ${RESTORE_PATH%/}/* ${SOURCE_PATH%/}/
 
 echo "Restore success - previous version stored as ${ROTATE_DIR}"
