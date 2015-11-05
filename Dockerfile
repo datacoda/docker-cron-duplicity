@@ -26,7 +26,8 @@ ENV PASSPHRASE=""
 ENV AWS_ACCESS_KEY_ID=""
 ENV AWS_SECRET_ACCESS_KEY=""
 
-RUN ln -s /usr/src/app/backup.sh /usr/local/sbin/backup \
+RUN chmod a+x /usr/src/app/*.sh \
+ && ln -s /usr/src/app/backup.sh /usr/local/sbin/backup \
  && ln -s /usr/src/app/list.sh /usr/local/sbin/list \
  && ln -s /usr/src/app/restore.sh /usr/local/sbin/restore \
  && ln -s /usr/src/app/status.sh /usr/local/sbin/status
