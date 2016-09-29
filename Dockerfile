@@ -1,5 +1,5 @@
 FROM python:2-onbuild
-MAINTAINER Ted Chen <tedlchen@gmail.com>
+MAINTAINER Li-Te Chen <datacoda@gmail.com>
 
 RUN apt-get update \
  && apt-get install -y cron rsync librsync-dev \
